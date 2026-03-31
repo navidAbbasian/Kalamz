@@ -14,12 +14,18 @@ class GameViewModel : ViewModel() {
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
 
     private var timer: CountDownTimer? = null
+    
+    // Timer pause functionality
+    private var remainingTimeWhenPaused: Long = 0L
 
     // Words collected from all players
     private var allWords: List<Word> = emptyList()
 
     // Track the play order: list of (teamIndex, playerSlot)
     private var playOrder: List<Pair<Int, Int>> = emptyList()
+    
+    // Track previous words for navigation
+    private var previousWords: List<Word> = emptyList()
 
     // ---- SETUP ----
 
@@ -58,6 +64,15 @@ class GameViewModel : ViewModel() {
                 team.copy(player1 = p1, player2 = p2)
             }
             state.copy(allPlayers = updatedPlayers, teams = updatedTeams)
+        }
+    }
+
+    fun updateTeamName(teamId: Int, name: String) {
+        _uiState.update { state ->
+            val updatedTeams = state.teams.map { team ->
+                if (team.id == teamId) team.copy(name = name) else team
+            }
+            state.copy(teams = updatedTeams)
         }
     }
 
@@ -136,6 +151,7 @@ class GameViewModel : ViewModel() {
     fun startTurn() {
         val shuffled = _uiState.value.remainingWords.shuffled()
         val timerDuration = _uiState.value.gameMode.timerDurationMillis
+        previousWords = emptyList() // Clear previous words stack
         _uiState.update {
             it.copy(
                 phase = GamePhase.TurnActive,
@@ -144,7 +160,8 @@ class GameViewModel : ViewModel() {
                 timeLeftMillis = timerDuration,
                 turnCorrectWords = emptyList(),
                 turnCorrectCount = 0,
-                penaltyTimeMillis = 0L
+                canGoToPrevious = false,
+                isTimerPaused = false
             )
         }
         startTimer(timerDuration)
@@ -199,36 +216,50 @@ class GameViewModel : ViewModel() {
         }
     }
 
-    fun passWord() {
+    fun nextWord() {
         val state = _uiState.value
-        val word = state.currentWord ?: return
+        val currentWord = state.currentWord ?: return
+
+        // Add current word to previous words stack
+        previousWords = previousWords + currentWord
 
         // Move current word to end of remaining
-        val withoutCurrent = state.remainingWords.filter { it.id != word.id }
-        val updatedRemaining = withoutCurrent + word
-
-        // Apply 1 second penalty
-        val penaltyMillis = 1000L
-        val newTimeLeft = maxOf(0L, state.timeLeftMillis - penaltyMillis)
-        val newPenaltyTime = state.penaltyTimeMillis + penaltyMillis
+        val withoutCurrent = state.remainingWords.filter { it.id != currentWord.id }
+        val updatedRemaining = withoutCurrent + currentWord
 
         _uiState.update {
             it.copy(
                 remainingWords = updatedRemaining,
                 currentWord = updatedRemaining.firstOrNull(),
-                timeLeftMillis = newTimeLeft,
-                penaltyTimeMillis = newPenaltyTime
+                canGoToPrevious = previousWords.isNotEmpty()
             )
         }
+    }
 
-        // If time runs out due to penalty, end the turn
-        if (newTimeLeft == 0L) {
-            timer?.cancel()
-            onTimerFinished()
+    fun previousWord() {
+        if (previousWords.isEmpty()) return
+        
+        val state = _uiState.value
+        val currentWord = state.currentWord
+
+        // Get the last word from previous stack
+        val lastPreviousWord = previousWords.last()
+        previousWords = previousWords.dropLast(1)
+
+        // Update remaining words
+        val updatedRemaining = if (currentWord != null) {
+            // If there's a current word, put it at the beginning of remaining
+            listOf(currentWord) + state.remainingWords.filter { it.id != currentWord.id }
         } else {
-            // Restart timer with reduced time
-            timer?.cancel()
-            startTimer(newTimeLeft)
+            state.remainingWords
+        }
+
+        _uiState.update {
+            it.copy(
+                remainingWords = updatedRemaining,
+                currentWord = lastPreviousWord,
+                canGoToPrevious = previousWords.isNotEmpty()
+            )
         }
     }
 
@@ -243,6 +274,23 @@ class GameViewModel : ViewModel() {
                 onTimerFinished()
             }
         }.start()
+    }
+
+    fun pauseTimer() {
+        val state = _uiState.value
+        if (state.phase is GamePhase.TurnActive && !state.isTimerPaused) {
+            timer?.cancel()
+            remainingTimeWhenPaused = state.timeLeftMillis
+            _uiState.update { it.copy(isTimerPaused = true) }
+        }
+    }
+
+    fun resumeTimer() {
+        val state = _uiState.value
+        if (state.phase is GamePhase.TurnActive && state.isTimerPaused) {
+            _uiState.update { it.copy(isTimerPaused = false) }
+            startTimer(remainingTimeWhenPaused)
+        }
     }
 
     private fun onTimerFinished() {

@@ -8,6 +8,7 @@ data class Player(
 
 data class Team(
     val id: Int,
+    val name: String = "",
     val player1: Player,
     val player2: Player,
     val scoresPerRound: List<Int> = listOf(0, 0, 0),
@@ -62,6 +63,7 @@ data class GameUiState(
     val turnCorrectWords: List<String> = emptyList(),
     val turnCorrectCount: Int = 0,
     val playOrderIndex: Int = 0, // index into the play order list
-    val penaltyTimeMillis: Long = 0L // accumulated penalty time
+    val canGoToPrevious: Boolean = false,
+    val isTimerPaused: Boolean = false
 )
 

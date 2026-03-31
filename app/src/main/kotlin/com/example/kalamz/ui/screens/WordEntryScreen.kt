@@ -2,9 +2,7 @@ package com.example.kalamz.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,6 +17,10 @@ import com.example.kalamz.model.GameMode
 import com.example.kalamz.model.Player
 import com.example.kalamz.ui.components.KalamzButton
 import com.example.kalamz.ui.theme.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import kotlinx.coroutines.launch
 
 @Composable
 fun WordEntryScreen(
@@ -100,44 +102,52 @@ fun WordEntryScreen(
             }
         } else {
             // Word entry form
-            val scrollState = rememberScrollState()
+            val listState = rememberLazyListState()
             val focusManager = LocalFocusManager.current
+            val coroutineScope = rememberCoroutineScope()
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp)
-                    .verticalScroll(scrollState)
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                contentPadding = PaddingValues(24.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Spacer(modifier = Modifier.height(24.dp))
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    Text(
+                        text = "✍️ ${player.name}",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = White,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                Text(
-                    text = "✍️ ${player.name}",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = White,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    Spacer(modifier = Modifier.height(4.dp))
 
-                Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "$wordCount کلمه بنویس!",
+                        fontSize = 16.sp,
+                        color = White.copy(alpha = 0.8f),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                Text(
-                    text = "$wordCount کلمه بنویس!",
-                    fontSize = 16.sp,
-                    color = White.copy(alpha = 0.8f),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
 
                 // Word input fields
-                words.forEachIndexed { index, word ->
+                itemsIndexed(words) { index, word ->
                     OutlinedTextField(
                         value = word,
                         onValueChange = { newVal ->
                             words = words.toMutableList().also { it[index] = newVal }
+                            // Auto-scroll to keep focused field visible
+                            coroutineScope.launch {
+                                listState.animateScrollToItem(index + 1) // +1 because of header item
+                            }
                         },
                         label = { Text("کلمه ${index + 1}") },
                         modifier = Modifier
@@ -157,22 +167,24 @@ fun WordEntryScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                KalamzButton(
-                    text = "ثبت کلمات ✅",
-                    onClick = {
-                        focusManager.clearFocus()
-                        onSubmitWords(currentPlayerIndex, words)
-                    },
-                    enabled = allWordsFilled,
-                    containerColor = YellowAccent,
-                    contentColor = DarkText,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    KalamzButton(
+                        text = "ثبت کلمات ✅",
+                        onClick = {
+                            focusManager.clearFocus()
+                            onSubmitWords(currentPlayerIndex, words)
+                        },
+                        enabled = allWordsFilled,
+                        containerColor = YellowAccent,
+                        contentColor = DarkText,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                // Extra space at bottom to ensure button is always visible above keyboard
-                Spacer(modifier = Modifier.height(120.dp))
+                    // Extra space at bottom to ensure button is always visible above keyboard
+                    Spacer(modifier = Modifier.height(120.dp))
+                }
             }
         }
     }

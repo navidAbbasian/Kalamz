@@ -59,7 +59,7 @@ fun TeamScoreCard(
 
                 Column {
                     Text(
-                        text = "تیم ${team.id + 1}",
+                        text = team.name.ifBlank { "تیم ${team.id + 1}" },
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = teamColor

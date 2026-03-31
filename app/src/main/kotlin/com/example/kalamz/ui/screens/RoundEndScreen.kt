@@ -23,6 +23,7 @@ import com.example.kalamz.ui.theme.*
 @Composable
 fun RoundEndScreen(
     round: RoundType,
+    teams: List<com.example.kalamz.model.Team>,
     teamScores: List<Pair<Int, Int>>, // teamId to score this round
     onProceed: () -> Unit
 ) {
@@ -83,6 +84,7 @@ fun RoundEndScreen(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     teamScores.sortedByDescending { it.second }.forEach { (teamId, score) ->
+                        val team = teams[teamId]
                         val teamColor = teamColors.getOrElse(teamId) { teamColors[0] }
                         Row(
                             modifier = Modifier
@@ -92,7 +94,7 @@ fun RoundEndScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "تیم ${teamId + 1}",
+                                text = team.name.ifBlank { "تیم ${teamId + 1}" },
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = teamColor

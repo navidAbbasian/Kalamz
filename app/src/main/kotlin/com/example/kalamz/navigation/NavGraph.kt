@@ -41,6 +41,9 @@ fun KalamzApp(
                 onPlayerNameChanged = { playerId, name ->
                     viewModel.updatePlayerName(playerId, name)
                 },
+                onTeamNameChanged = { teamId, name ->
+                    viewModel.updateTeamName(teamId, name)
+                },
                 onConfirm = { viewModel.confirmTeams() }
             )
         }
@@ -79,8 +82,11 @@ fun KalamzApp(
                 state = state,
                 onStartTurn = { viewModel.startTurn() },
                 onCorrect = { viewModel.markCorrect() },
-                onPass = { viewModel.passWord() },
-                onProceed = { viewModel.proceedAfterTurn() }
+                onPrevious = { viewModel.previousWord() },
+                onNext = { viewModel.nextWord() },
+                onProceed = { viewModel.proceedAfterTurn() },
+                onPauseTimer = { viewModel.pauseTimer() },
+                onResumeTimer = { viewModel.resumeTimer() }
             )
         }
 
@@ -91,6 +97,7 @@ fun KalamzApp(
             }
             RoundEndScreen(
                 round = phase.round,
+                teams = state.teams,
                 teamScores = teamScores,
                 onProceed = { viewModel.proceedToNextRound() }
             )

@@ -23,9 +23,12 @@ import com.example.kalamz.ui.theme.*
 fun TeamSetupScreen(
     teams: List<Team>,
     onPlayerNameChanged: (playerId: Int, name: String) -> Unit,
+    onTeamNameChanged: (teamId: Int, name: String) -> Unit,
     onConfirm: () -> Unit
 ) {
-    val allNamesFilled = teams.all { it.player1.name.isNotBlank() && it.player2.name.isNotBlank() }
+    val allNamesFilled = teams.all { 
+        it.player1.name.isNotBlank() && it.player2.name.isNotBlank() && it.name.isNotBlank() 
+    }
 
     Box(
         modifier = Modifier
@@ -94,6 +97,22 @@ fun TeamSetupScreen(
                             )
 
                             Spacer(modifier = Modifier.height(12.dp))
+
+                            OutlinedTextField(
+                                value = team.name,
+                                onValueChange = { onTeamNameChanged(team.id, it) },
+                                label = { Text("نام تیم") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                shape = RoundedCornerShape(12.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = teamColor,
+                                    unfocusedBorderColor = Color.LightGray,
+                                    cursorColor = teamColor
+                                )
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
 
                             OutlinedTextField(
                                 value = team.player1.name,

@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kalamz.model.GamePhase
 import com.example.kalamz.model.GameUiState
+import com.example.kalamz.model.Team
 import com.example.kalamz.ui.components.KalamzButton
 import com.example.kalamz.ui.components.TimerDisplay
 import com.example.kalamz.ui.components.WordCard
@@ -29,19 +30,25 @@ fun TurnScreen(
     state: GameUiState,
     onStartTurn: () -> Unit,
     onCorrect: () -> Unit,
-    onPass: () -> Unit,
-    onProceed: () -> Unit
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+    onProceed: () -> Unit,
+    onPauseTimer: () -> Unit,
+    onResumeTimer: () -> Unit
 ) {
     when (val phase = state.phase) {
         is GamePhase.TurnReady -> TurnReadyContent(
             playerName = phase.playerName,
-            teamId = phase.teamId,
+            team = state.teams[phase.teamId],
             onStart = onStartTurn
         )
         is GamePhase.TurnActive -> TurnActiveContent(
             state = state,
             onCorrect = onCorrect,
-            onPass = onPass
+            onPrevious = onPrevious,
+            onNext = onNext,
+            onPauseTimer = onPauseTimer,
+            onResumeTimer = onResumeTimer
         )
         is GamePhase.TurnEnd -> TurnEndContent(
             correctCount = phase.correctCount,
@@ -55,10 +62,10 @@ fun TurnScreen(
 @Composable
 private fun TurnReadyContent(
     playerName: String,
-    teamId: Int,
+    team: Team,
     onStart: () -> Unit
 ) {
-    val teamColor = teamColors.getOrElse(teamId) { teamColors[0] }
+    val teamColor = teamColors.getOrElse(team.id) { teamColors[0] }
 
     Box(
         modifier = Modifier
@@ -103,7 +110,7 @@ private fun TurnReadyContent(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "تیم ${teamId + 1}",
+                text = team.name.ifBlank { "تیم ${team.id + 1}" },
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = YellowAccent,
@@ -127,7 +134,10 @@ private fun TurnReadyContent(
 private fun TurnActiveContent(
     state: GameUiState,
     onCorrect: () -> Unit,
-    onPass: () -> Unit
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+    onPauseTimer: () -> Unit,
+    onResumeTimer: () -> Unit
 ) {
     val teamColor = teamColors.getOrElse(state.currentTeamIndex) { teamColors[0] }
 
@@ -148,6 +158,17 @@ private fun TurnActiveContent(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Pause button at top center
+            KalamzButton(
+                text = if (state.isTimerPaused) "▶️" else "⏸️",
+                onClick = if (state.isTimerPaused) onResumeTimer else onPauseTimer,
+                containerColor = if (state.isTimerPaused) GreenAccent else OrangeAccent,
+                contentColor = White,
+                modifier = Modifier.size(48.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             // Round indicator & score
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -161,7 +182,9 @@ private fun TurnActiveContent(
                         color = MediumGray
                     )
                     Text(
-                        text = "تیم ${state.currentTeamIndex + 1}",
+                        text = state.teams[state.currentTeamIndex].name.ifBlank { 
+                            "تیم ${state.currentTeamIndex + 1}" 
+                        },
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = teamColor
@@ -195,31 +218,14 @@ private fun TurnActiveContent(
                         color = MediumGray
                     )
                 }
-
-                // Penalty indicator
-                if (state.penaltyTimeMillis > 0L) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "-${state.penaltyTimeMillis / 1000}s",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = androidx.compose.ui.graphics.Color.Red
-                        )
-                        Text(
-                            text = "جریمه",
-                            fontSize = 10.sp,
-                            color = MediumGray
-                        )
-                    }
-                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Timer
+            // Timer (without pause button)
             TimerDisplay(
                 timeLeftMillis = state.timeLeftMillis,
-                modifier = Modifier
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -228,37 +234,64 @@ private fun TurnActiveContent(
             state.currentWord?.let { word ->
                 WordCard(
                     word = word.text,
+                    onPrevious = onPrevious,
+                    onNext = onNext,
+                    canGoBack = state.canGoToPrevious,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Action buttons
-            Row(
+            // Action button
+            KalamzButton(
+                text = "درسته ✅",
+                onClick = onCorrect,
+                containerColor = GreenAccent,
+                contentColor = White,
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Pass button
-                KalamzButton(
-                    text = "رد شو ⏭️",
-                    onClick = onPass,
-                    containerColor = OrangeAccent,
-                    contentColor = White,
-                    modifier = Modifier.weight(1f)
-                )
-
-                // Correct button
-                KalamzButton(
-                    text = "درسته ✅",
-                    onClick = onCorrect,
-                    containerColor = GreenAccent,
-                    contentColor = White,
-                    modifier = Modifier.weight(1f)
-                )
-            }
+                enabled = !state.isTimerPaused
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
+        }
+        
+        // Pause overlay
+        if (state.isTimerPaused) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "⏸️",
+                        fontSize = 64.sp
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Text(
+                        text = "بازی متوقف شده",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = White,
+                        textAlign = TextAlign.Center
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        text = "برای ادامه روی دکمه پخش کلیک کن",
+                        fontSize = 16.sp,
+                        color = White.copy(alpha = 0.8f),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
         }
     }
 }
