@@ -1,0 +1,351 @@
+package com.example.kalamz.ui.screens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.kalamz.model.GamePhase
+import com.example.kalamz.model.GameUiState
+import com.example.kalamz.ui.components.KalamzButton
+import com.example.kalamz.ui.components.TimerDisplay
+import com.example.kalamz.ui.components.WordCard
+import com.example.kalamz.ui.theme.*
+
+@Composable
+fun TurnScreen(
+    state: GameUiState,
+    onStartTurn: () -> Unit,
+    onCorrect: () -> Unit,
+    onPass: () -> Unit,
+    onProceed: () -> Unit
+) {
+    when (val phase = state.phase) {
+        is GamePhase.TurnReady -> TurnReadyContent(
+            playerName = phase.playerName,
+            teamId = phase.teamId,
+            onStart = onStartTurn
+        )
+        is GamePhase.TurnActive -> TurnActiveContent(
+            state = state,
+            onCorrect = onCorrect,
+            onPass = onPass
+        )
+        is GamePhase.TurnEnd -> TurnEndContent(
+            correctCount = phase.correctCount,
+            correctWords = phase.correctWords,
+            onProceed = onProceed
+        )
+        else -> {}
+    }
+}
+
+@Composable
+private fun TurnReadyContent(
+    playerName: String,
+    teamId: Int,
+    onStart: () -> Unit
+) {
+    val teamColor = teamColors.getOrElse(teamId) { teamColors[0] }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(teamColor, teamColor.copy(alpha = 0.7f))
+                )
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(32.dp)
+        ) {
+            Text(
+                text = "📱",
+                fontSize = 56.sp,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "گوشی رو بده به",
+                fontSize = 20.sp,
+                color = White.copy(alpha = 0.8f),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = playerName,
+                fontSize = 36.sp,
+                fontWeight = FontWeight.Bold,
+                color = White,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "تیم ${teamId + 1}",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = YellowAccent,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            KalamzButton(
+                text = "شروع ⏱️",
+                onClick = onStart,
+                containerColor = White,
+                contentColor = teamColor,
+                modifier = Modifier.fillMaxWidth(0.7f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun TurnActiveContent(
+    state: GameUiState,
+    onCorrect: () -> Unit,
+    onPass: () -> Unit
+) {
+    val teamColor = teamColors.getOrElse(state.currentTeamIndex) { teamColors[0] }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(teamColor.copy(alpha = 0.1f), White)
+                )
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Round indicator & score
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = state.currentRound.persianTitle.split(":").first(),
+                        fontSize = 14.sp,
+                        color = MediumGray
+                    )
+                    Text(
+                        text = "تیم ${state.currentTeamIndex + 1}",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = teamColor
+                    )
+                }
+
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "${state.turnCorrectCount}",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = GreenAccent
+                    )
+                    Text(
+                        text = "درست",
+                        fontSize = 12.sp,
+                        color = MediumGray
+                    )
+                }
+
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "${state.remainingWords.size}",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = OrangeAccent
+                    )
+                    Text(
+                        text = "باقیمانده",
+                        fontSize = 12.sp,
+                        color = MediumGray
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Timer
+            TimerDisplay(
+                timeLeftMillis = state.timeLeftMillis,
+                modifier = Modifier
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Word Card
+            state.currentWord?.let { word ->
+                WordCard(
+                    word = word.text,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Action buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Pass button
+                KalamzButton(
+                    text = "رد شو ⏭️",
+                    onClick = onPass,
+                    containerColor = OrangeAccent,
+                    contentColor = White,
+                    modifier = Modifier.weight(1f)
+                )
+
+                // Correct button
+                KalamzButton(
+                    text = "درسته ✅",
+                    onClick = onCorrect,
+                    containerColor = GreenAccent,
+                    contentColor = White,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun TurnEndContent(
+    correctCount: Int,
+    correctWords: List<String>,
+    onProceed: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(RedPrimary, RedDark)
+                )
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(48.dp))
+
+            Text(
+                text = if (correctCount > 0) "🎉" else "😅",
+                fontSize = 56.sp,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "تایم تموم شد!",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = White,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "$correctCount کلمه درست",
+                fontSize = 22.sp,
+                color = YellowAccent,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            if (correctWords.isNotEmpty()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = White.copy(alpha = 0.15f))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        Text(
+                            text = "کلمات درست:",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = White.copy(alpha = 0.8f),
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        correctWords.forEach { word ->
+                            Text(
+                                text = "✅ $word",
+                                fontSize = 18.sp,
+                                color = White,
+                                modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            } else {
+                Spacer(modifier = Modifier.weight(1f))
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            KalamzButton(
+                text = "بعدی ➡️",
+                onClick = onProceed,
+                containerColor = YellowAccent,
+                contentColor = DarkText
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
