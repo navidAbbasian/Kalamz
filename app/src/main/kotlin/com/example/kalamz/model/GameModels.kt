@@ -28,9 +28,9 @@ enum class RoundType(val roundNumber: Int, val persianTitle: String, val persian
     PANTOMIME(3, "راند سوم: پانتومیم!", "بدون هیچ حرفی، فقط با ادا و اشاره کلمه رو نشون بده!")
 }
 
-enum class GameMode(val wordsPerPlayer: Int, val persianTitle: String) {
-    QUICK(4, "سریع"),
-    PRO(8, "حرفه‌ای")
+enum class GameMode(val wordsPerPlayer: Int, val persianTitle: String, val timerDurationMillis: Long) {
+    QUICK(4, "سریع", 15_000L),
+    PRO(8, "حرفه‌ای", 45_000L)
 }
 
 sealed class GamePhase {
@@ -58,9 +58,10 @@ data class GameUiState(
     val currentTeamIndex: Int = 0,
     val currentPlayerSlot: Int = 1, // 1 or 2
     val currentWord: Word? = null,
-    val timeLeftMillis: Long = 60_000L,
+    val timeLeftMillis: Long = 15_000L,
     val turnCorrectWords: List<String> = emptyList(),
     val turnCorrectCount: Int = 0,
-    val playOrderIndex: Int = 0 // index into the play order list
+    val playOrderIndex: Int = 0, // index into the play order list
+    val penaltyTimeMillis: Long = 0L // accumulated penalty time
 )
 

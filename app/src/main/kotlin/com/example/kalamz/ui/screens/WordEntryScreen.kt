@@ -10,7 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -100,10 +100,14 @@ fun WordEntryScreen(
             }
         } else {
             // Word entry form
+            val scrollState = rememberScrollState()
+            val focusManager = LocalFocusManager.current
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(24.dp)
+                    .verticalScroll(scrollState)
             ) {
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -128,44 +132,47 @@ fun WordEntryScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    words.forEachIndexed { index, word ->
-                        OutlinedTextField(
-                            value = word,
-                            onValueChange = { newVal ->
-                                words = words.toMutableList().also { it[index] = newVal }
-                            },
-                            label = { Text("کلمه ${index + 1}") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = YellowAccent,
-                                unfocusedBorderColor = White.copy(alpha = 0.5f),
-                                focusedLabelColor = YellowAccent,
-                                unfocusedLabelColor = White.copy(alpha = 0.7f),
-                                cursorColor = YellowAccent,
-                                focusedTextColor = White,
-                                unfocusedTextColor = White
-                            )
+                // Word input fields
+                words.forEachIndexed { index, word ->
+                    OutlinedTextField(
+                        value = word,
+                        onValueChange = { newVal ->
+                            words = words.toMutableList().also { it[index] = newVal }
+                        },
+                        label = { Text("کلمه ${index + 1}") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = YellowAccent,
+                            unfocusedBorderColor = White.copy(alpha = 0.5f),
+                            focusedLabelColor = YellowAccent,
+                            unfocusedLabelColor = White.copy(alpha = 0.7f),
+                            cursorColor = YellowAccent,
+                            focusedTextColor = White,
+                            unfocusedTextColor = White
                         )
-                    }
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 KalamzButton(
                     text = "ثبت کلمات ✅",
-                    onClick = { onSubmitWords(currentPlayerIndex, words) },
+                    onClick = {
+                        focusManager.clearFocus()
+                        onSubmitWords(currentPlayerIndex, words)
+                    },
                     enabled = allWordsFilled,
                     containerColor = YellowAccent,
-                    contentColor = DarkText
+                    contentColor = DarkText,
+                    modifier = Modifier.fillMaxWidth()
                 )
+
+                // Extra space at bottom to ensure button is always visible above keyboard
+                Spacer(modifier = Modifier.height(120.dp))
             }
         }
     }

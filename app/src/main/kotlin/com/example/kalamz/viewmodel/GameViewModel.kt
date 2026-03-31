@@ -135,17 +135,19 @@ class GameViewModel : ViewModel() {
 
     fun startTurn() {
         val shuffled = _uiState.value.remainingWords.shuffled()
+        val timerDuration = _uiState.value.gameMode.timerDurationMillis
         _uiState.update {
             it.copy(
                 phase = GamePhase.TurnActive,
                 remainingWords = shuffled,
                 currentWord = shuffled.firstOrNull(),
-                timeLeftMillis = 60_000L,
+                timeLeftMillis = timerDuration,
                 turnCorrectWords = emptyList(),
-                turnCorrectCount = 0
+                turnCorrectCount = 0,
+                penaltyTimeMillis = 0L
             )
         }
-        startTimer()
+        startTimer(timerDuration)
     }
 
     fun markCorrect() {
@@ -205,17 +207,34 @@ class GameViewModel : ViewModel() {
         val withoutCurrent = state.remainingWords.filter { it.id != word.id }
         val updatedRemaining = withoutCurrent + word
 
+        // Apply 1 second penalty
+        val penaltyMillis = 1000L
+        val newTimeLeft = maxOf(0L, state.timeLeftMillis - penaltyMillis)
+        val newPenaltyTime = state.penaltyTimeMillis + penaltyMillis
+
         _uiState.update {
             it.copy(
                 remainingWords = updatedRemaining,
-                currentWord = updatedRemaining.firstOrNull()
+                currentWord = updatedRemaining.firstOrNull(),
+                timeLeftMillis = newTimeLeft,
+                penaltyTimeMillis = newPenaltyTime
             )
+        }
+
+        // If time runs out due to penalty, end the turn
+        if (newTimeLeft == 0L) {
+            timer?.cancel()
+            onTimerFinished()
+        } else {
+            // Restart timer with reduced time
+            timer?.cancel()
+            startTimer(newTimeLeft)
         }
     }
 
-    private fun startTimer() {
+    private fun startTimer(durationMillis: Long) {
         timer?.cancel()
-        timer = object : CountDownTimer(60_000L, 100L) {
+        timer = object : CountDownTimer(durationMillis, 100L) {
             override fun onTick(millisUntilFinished: Long) {
                 _uiState.update { it.copy(timeLeftMillis = millisUntilFinished) }
             }
@@ -248,34 +267,19 @@ class GameViewModel : ViewModel() {
             return
         }
 
-        // Move to next player in play order
-        val nextOrderIndex = state.playOrderIndex + 1
-        if (nextOrderIndex < playOrder.size) {
-            val (teamIdx, slot) = playOrder[nextOrderIndex]
-            val team = state.teams[teamIdx]
-            val playerName = if (slot == 1) team.player1.name else team.player2.name
+        // Move to next player in circular play order
+        val nextOrderIndex = (state.playOrderIndex + 1) % playOrder.size
+        val (teamIdx, slot) = playOrder[nextOrderIndex]
+        val team = state.teams[teamIdx]
+        val playerName = if (slot == 1) team.player1.name else team.player2.name
 
-            _uiState.update {
-                it.copy(
-                    playOrderIndex = nextOrderIndex,
-                    currentTeamIndex = teamIdx,
-                    currentPlayerSlot = slot,
-                    phase = GamePhase.TurnReady(playerName = playerName, teamId = teamIdx)
-                )
-            }
-        } else {
-            // All players have played, loop back to first
-            _uiState.update {
-                it.copy(
-                    playOrderIndex = 0,
-                    phase = GamePhase.TurnReady(
-                        playerName = state.teams[playOrder[0].first].let { t ->
-                            if (playOrder[0].second == 1) t.player1.name else t.player2.name
-                        },
-                        teamId = playOrder[0].first
-                    )
-                )
-            }
+        _uiState.update {
+            it.copy(
+                playOrderIndex = nextOrderIndex,
+                currentTeamIndex = teamIdx,
+                currentPlayerSlot = slot,
+                phase = GamePhase.TurnReady(playerName = playerName, teamId = teamIdx)
+            )
         }
     }
 
@@ -295,11 +299,13 @@ class GameViewModel : ViewModel() {
         }
 
         if (nextRound != null) {
+            // Move to next player for the new round
+            val nextOrderIndex = (state.playOrderIndex + 1) % playOrder.size
             _uiState.update {
                 it.copy(
                     currentRound = nextRound,
                     remainingWords = allWords.shuffled(),
-                    playOrderIndex = 0,
+                    playOrderIndex = nextOrderIndex,
                     phase = GamePhase.RoundIntro(nextRound)
                 )
             }

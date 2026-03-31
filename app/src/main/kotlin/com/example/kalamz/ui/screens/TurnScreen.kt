@@ -195,6 +195,23 @@ private fun TurnActiveContent(
                         color = MediumGray
                     )
                 }
+
+                // Penalty indicator
+                if (state.penaltyTimeMillis > 0L) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "-${state.penaltyTimeMillis / 1000}s",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = androidx.compose.ui.graphics.Color.Red
+                        )
+                        Text(
+                            text = "جریمه",
+                            fontSize = 10.sp,
+                            color = MediumGray
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))

@@ -86,6 +86,11 @@ fun GameModeScreen(
                         fontSize = 16.sp,
                         color = DarkText.copy(alpha = 0.7f)
                     )
+                    Text(
+                        text = "۱۵ ثانیه زمان",
+                        fontSize = 14.sp,
+                        color = DarkText.copy(alpha = 0.6f)
+                    )
                 }
             }
 
@@ -119,6 +124,11 @@ fun GameModeScreen(
                         text = "هر نفر ۸ کلمه می‌نویسه",
                         fontSize = 16.sp,
                         color = White.copy(alpha = 0.8f)
+                    )
+                    Text(
+                        text = "۴۵ ثانیه زمان",
+                        fontSize = 14.sp,
+                        color = White.copy(alpha = 0.7f)
                     )
                 }
             }
