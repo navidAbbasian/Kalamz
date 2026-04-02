@@ -29,15 +29,10 @@ enum class RoundType(val roundNumber: Int, val persianTitle: String, val persian
     PANTOMIME(3, "راند سوم: پانتومیم!", "بدون هیچ حرفی، فقط با ادا و اشاره کلمه رو نشون بده!")
 }
 
-enum class GameMode(val wordsPerPlayer: Int, val persianTitle: String, val timerDurationMillis: Long) {
-    QUICK(4, "سریع", 15_000L),
-    PRO(8, "حرفه‌ای", 45_000L)
-}
-
 sealed class GamePhase {
     data object Setup : GamePhase()
     data object TeamSetup : GamePhase()
-    data object ModeSelection : GamePhase()
+    data object CustomSettings : GamePhase()
     data class WordEntry(val currentPlayerIndex: Int) : GamePhase()
     data class RoundIntro(val round: RoundType) : GamePhase()
     data class TurnReady(val playerName: String, val teamId: Int) : GamePhase()
@@ -50,7 +45,8 @@ sealed class GamePhase {
 data class GameUiState(
     val phase: GamePhase = GamePhase.Setup,
     val playerCount: Int = 4,
-    val gameMode: GameMode = GameMode.QUICK,
+    val wordsPerPlayer: Int = 5,
+    val timerDurationMillis: Long = 45_000L,
     val teams: List<Team> = emptyList(),
     val allPlayers: List<Player> = emptyList(),
     val wordBank: List<Word> = emptyList(),
@@ -59,7 +55,7 @@ data class GameUiState(
     val currentTeamIndex: Int = 0,
     val currentPlayerSlot: Int = 1, // 1 or 2
     val currentWord: Word? = null,
-    val timeLeftMillis: Long = 15_000L,
+    val timeLeftMillis: Long = 45_000L,
     val turnCorrectWords: List<String> = emptyList(),
     val turnCorrectCount: Int = 0,
     val playOrderIndex: Int = 0, // index into the play order list

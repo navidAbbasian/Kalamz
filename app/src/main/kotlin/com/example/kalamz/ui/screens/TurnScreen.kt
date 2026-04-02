@@ -7,7 +7,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,7 +38,8 @@ fun TurnScreen(
     onNext: () -> Unit,
     onProceed: () -> Unit,
     onPauseTimer: () -> Unit,
-    onResumeTimer: () -> Unit
+    onResumeTimer: () -> Unit,
+    onRemoveWord: (String) -> Unit
 ) {
     when (val phase = state.phase) {
         is GamePhase.TurnReady -> TurnReadyContent(
@@ -53,7 +58,8 @@ fun TurnScreen(
         is GamePhase.TurnEnd -> TurnEndContent(
             correctCount = phase.correctCount,
             correctWords = phase.correctWords,
-            onProceed = onProceed
+            onProceed = onProceed,
+            onRemoveWord = onRemoveWord
         )
         else -> {}
     }
@@ -300,7 +306,8 @@ private fun TurnActiveContent(
 private fun TurnEndContent(
     correctCount: Int,
     correctWords: List<String>,
-    onProceed: () -> Unit
+    onProceed: () -> Unit,
+    onRemoveWord: (String) -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -345,7 +352,16 @@ private fun TurnEndContent(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "اگه کلمه‌ای اشتباه زده شده، روی ❌ بزن تا حذف بشه",
+                fontSize = 13.sp,
+                color = White.copy(alpha = 0.65f),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             if (correctWords.isNotEmpty()) {
                 Card(
@@ -371,13 +387,34 @@ private fun TurnEndContent(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         correctWords.forEach { word ->
-                            Text(
-                                text = "✅ $word",
-                                fontSize = 18.sp,
-                                color = White,
-                                modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
-                                textAlign = TextAlign.Center
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "✅ $word",
+                                    fontSize = 18.sp,
+                                    color = White,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(start = 8.dp),
+                                    textAlign = TextAlign.Start
+                                )
+                                IconButton(
+                                    onClick = { onRemoveWord(word) },
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "حذف کلمه",
+                                        tint = Color.Red.copy(alpha = 0.85f),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }

@@ -13,7 +13,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.kalamz.model.GameMode
 import com.example.kalamz.model.Player
 import com.example.kalamz.ui.components.KalamzButton
 import com.example.kalamz.ui.theme.*
@@ -25,12 +24,12 @@ import kotlinx.coroutines.launch
 @Composable
 fun WordEntryScreen(
     player: Player,
-    gameMode: GameMode,
+    wordsPerPlayer: Int,
     currentPlayerIndex: Int,
     totalPlayers: Int,
     onSubmitWords: (playerIndex: Int, words: List<String>) -> Unit
 ) {
-    val wordCount = gameMode.wordsPerPlayer
+    val wordCount = wordsPerPlayer
     var words by remember(player.id) {
         mutableStateOf(List(wordCount) { "" })
     }

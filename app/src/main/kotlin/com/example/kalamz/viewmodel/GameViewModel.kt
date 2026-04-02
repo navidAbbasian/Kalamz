@@ -77,13 +77,14 @@ class GameViewModel : ViewModel() {
     }
 
     fun confirmTeams() {
-        _uiState.update { it.copy(phase = GamePhase.ModeSelection) }
+        _uiState.update { it.copy(phase = GamePhase.CustomSettings) }
     }
 
-    fun setGameMode(mode: GameMode) {
+    fun setGameSettings(wordsPerPlayer: Int, timerDurationMillis: Long) {
         _uiState.update {
             it.copy(
-                gameMode = mode,
+                wordsPerPlayer = wordsPerPlayer,
+                timerDurationMillis = timerDurationMillis,
                 phase = GamePhase.WordEntry(currentPlayerIndex = 0)
             )
         }
@@ -150,7 +151,7 @@ class GameViewModel : ViewModel() {
 
     fun startTurn() {
         val shuffled = _uiState.value.remainingWords.shuffled()
-        val timerDuration = _uiState.value.gameMode.timerDurationMillis
+        val timerDuration = _uiState.value.timerDurationMillis
         previousWords = emptyList() // Clear previous words stack
         _uiState.update {
             it.copy(
@@ -259,6 +260,47 @@ class GameViewModel : ViewModel() {
                 remainingWords = updatedRemaining,
                 currentWord = lastPreviousWord,
                 canGoToPrevious = previousWords.isNotEmpty()
+            )
+        }
+    }
+
+    fun removeCorrectWord(word: String) {
+        val state = _uiState.value
+
+        // Find the Word object in the wordBank
+        val wordObj = allWords.find { it.text == word } ?: return
+
+        // Remove from turnCorrectWords
+        val updatedTurnWords = state.turnCorrectWords.toMutableList().also { it.remove(word) }
+        val updatedCount = updatedTurnWords.size
+
+        // Add back to remainingWords
+        val updatedRemaining = state.remainingWords + wordObj
+
+        // Revert team score and correctWordsPerRound
+        val roundIndex = state.currentRound.roundNumber - 1
+        val updatedTeams = state.teams.map { team ->
+            if (team.id == state.currentTeamIndex) {
+                val newScores = team.scoresPerRound.toMutableList()
+                newScores[roundIndex] = (newScores[roundIndex] - 1).coerceAtLeast(0)
+                val newCorrectWords = team.correctWordsPerRound.toMutableList()
+                val wordList = newCorrectWords[roundIndex].toMutableList()
+                wordList.remove(word)
+                newCorrectWords[roundIndex] = wordList
+                team.copy(scoresPerRound = newScores, correctWordsPerRound = newCorrectWords)
+            } else team
+        }
+
+        _uiState.update {
+            it.copy(
+                turnCorrectWords = updatedTurnWords,
+                turnCorrectCount = updatedCount,
+                remainingWords = updatedRemaining,
+                teams = updatedTeams,
+                phase = GamePhase.TurnEnd(
+                    correctCount = updatedCount,
+                    correctWords = updatedTurnWords
+                )
             )
         }
     }

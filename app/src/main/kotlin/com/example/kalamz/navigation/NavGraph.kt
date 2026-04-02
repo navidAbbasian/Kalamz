@@ -48,10 +48,10 @@ fun KalamzApp(
             )
         }
 
-        is GamePhase.ModeSelection -> {
-            GameModeScreen(
-                onModeSelected = { mode ->
-                    viewModel.setGameMode(mode)
+        is GamePhase.CustomSettings -> {
+            GameSettingsScreen(
+                onConfirmSettings = { wordsPerPlayer, timerDurationMillis ->
+                    viewModel.setGameSettings(wordsPerPlayer, timerDurationMillis)
                 }
             )
         }
@@ -61,7 +61,7 @@ fun KalamzApp(
             val player = state.allPlayers[playerIndex]
             WordEntryScreen(
                 player = player,
-                gameMode = state.gameMode,
+                wordsPerPlayer = state.wordsPerPlayer,
                 currentPlayerIndex = playerIndex,
                 totalPlayers = state.allPlayers.size,
                 onSubmitWords = { idx, words ->
@@ -86,7 +86,8 @@ fun KalamzApp(
                 onNext = { viewModel.nextWord() },
                 onProceed = { viewModel.proceedAfterTurn() },
                 onPauseTimer = { viewModel.pauseTimer() },
-                onResumeTimer = { viewModel.resumeTimer() }
+                onResumeTimer = { viewModel.resumeTimer() },
+                onRemoveWord = { word -> viewModel.removeCorrectWord(word) }
             )
         }
 
