@@ -89,7 +89,9 @@ fun SettingsScreen() {
                     elevation = CardDefaults.cardElevation(0.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(20.dp),
+                        modifier = Modifier
+                            .padding(20.dp)
+                            .fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(Icons.Default.Favorite, contentDescription = null, tint = RedLight, modifier = Modifier.size(28.dp))

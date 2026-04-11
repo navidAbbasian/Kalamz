@@ -74,7 +74,9 @@ fun KalamzApp(viewModel: GameViewModel = viewModel()) {
                     KalamzBottomNav(
                         currentTab = currentTab,
                         onTabSelected = { currentTab = it },
-                        modifier = Modifier.align(Alignment.BottomCenter)
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 28.dp)
                     )
                 }
             } else {
@@ -188,7 +190,7 @@ fun KalamzBottomNav(
         ) {
             BottomNavItem(
                 icon = Icons.Default.Settings,
-                label = "تنظیمات",
+                label = "اطلاعات",
                 selected = currentTab == MainTab.SETTINGS,
                 onClick = { onTabSelected(MainTab.SETTINGS) }
             )
