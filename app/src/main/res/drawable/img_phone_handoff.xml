@@ -1,0 +1,23 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    <!-- Phone outline -->
+    <path android:fillColor="#CCFFFFFF"
+        android:pathData="M38,8 Q32,8 32,15 L32,105 Q32,112 38,112 L82,112 Q88,112 88,105 L88,15 Q88,8 82,8 Z"/>
+    <!-- Screen area -->
+    <path android:fillColor="#33C62828"
+        android:pathData="M36,22 L84,22 L84,90 L36,90 Z"/>
+    <!-- Home button -->
+    <path android:fillColor="#33C62828"
+        android:pathData="M60,97 A6,6 0 1,1 59.99,97 Z"/>
+    <!-- Notch -->
+    <path android:fillColor="#33C62828"
+        android:pathData="M50,12 L70,12 Q75,12 75,16 Q75,20 70,20 L50,20 Q45,20 45,16 Q45,12 50,12 Z"/>
+    <!-- Arrow/hand gesture -->
+    <path android:fillColor="#FF6B6B"
+        android:strokeWidth="0"
+        android:pathData="M50,50 L55,45 L55,48 L70,48 L70,52 L55,52 L55,55 Z"/>
+</vector>
+

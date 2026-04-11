@@ -1,0 +1,38 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    <!-- Head -->
+    <path android:fillColor="#CCFFFFFF"
+        android:pathData="M60,10 A16,16 0 1,1 59.99,10 Z"/>
+    <!-- Body torso -->
+    <path android:fillColor="#CCFFFFFF"
+        android:strokeColor="#CCFFFFFF"
+        android:strokeWidth="3"
+        android:pathData="M60,42 L60,78"/>
+    <!-- Left arm raised -->
+    <path android:strokeColor="#CCFFFFFF"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:pathData="M60,52 L28,30"/>
+    <!-- Right arm raised -->
+    <path android:strokeColor="#CCFFFFFF"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:pathData="M60,52 L92,30"/>
+    <!-- Left leg -->
+    <path android:strokeColor="#CCFFFFFF"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:pathData="M60,78 L40,108"/>
+    <!-- Right leg -->
+    <path android:strokeColor="#CCFFFFFF"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:pathData="M60,78 L80,108"/>
+    <!-- Background glow -->
+    <path android:fillColor="#22FFFFFF"
+        android:pathData="M60,0 A60,60 0 1,1 59.99,0 Z"/>
+</vector>
+

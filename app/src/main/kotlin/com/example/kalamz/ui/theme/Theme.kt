@@ -8,23 +8,23 @@ import androidx.compose.ui.graphics.Color
 private val KalamzColorScheme = lightColorScheme(
     primary = RedPrimary,
     onPrimary = White,
-    primaryContainer = RedLight,
-    onPrimaryContainer = RedDark,
-    secondary = YellowAccent,
+    primaryContainer = RedMid,
+    onPrimaryContainer = White,
+    secondary = GoldAccent,
     onSecondary = DarkText,
     secondaryContainer = Color(0xFFFFF9C4),
     onSecondaryContainer = DarkText,
     tertiary = GreenAccent,
     onTertiary = White,
-    background = White,
-    onBackground = DarkText,
-    surface = White,
-    onSurface = DarkText,
-    surfaceVariant = RedSurface,
-    onSurfaceVariant = DarkText,
-    error = Color(0xFFD32F2F),
+    background = RedDark,
+    onBackground = White,
+    surface = RedMid,
+    onSurface = White,
+    surfaceVariant = GlassWhiteMid,
+    onSurfaceVariant = White,
+    error = Color(0xFFFF5252),
     onError = White,
-    outline = MediumGray
+    outline = GlassBorder
 )
 
 @Composable
@@ -35,4 +35,3 @@ fun KalamzTheme(content: @Composable () -> Unit) {
         content = content
     )
 }
-

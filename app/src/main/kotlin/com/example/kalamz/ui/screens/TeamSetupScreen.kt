@@ -1,5 +1,6 @@
 package com.example.kalamz.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -26,138 +27,135 @@ fun TeamSetupScreen(
     onTeamNameChanged: (teamId: Int, name: String) -> Unit,
     onConfirm: () -> Unit
 ) {
-    val allNamesFilled = teams.all { 
-        it.player1.name.isNotBlank() && it.player2.name.isNotBlank() && it.name.isNotBlank() 
+    val allNamesFilled = teams.all {
+        it.player1.name.isNotBlank() && it.player2.name.isNotBlank() && it.name.isNotBlank()
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(RedPrimary, RedDark)
-                )
-            )
+            .background(Brush.verticalGradient(listOf(RedMid, RedDark)))
     ) {
+        // imePadding روی ستون بیرونی → وقتی کیبورد باز می‌شه فضای کل ستون کوچک می‌شه
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp)
+                .imePadding()                       // ← کلید حل مشکل
+                .padding(horizontal = 20.dp)
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(52.dp))
 
             Text(
-                text = "✏️ تیم‌بندی",
-                fontSize = 28.sp,
+                text = "تیم‌بندی",
+                fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = White,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "اسم بازیکن‌ها رو وارد کنید",
-                fontSize = 16.sp,
-                color = White.copy(alpha = 0.8f),
+                text = "اسم تیم‌ها و بازیکن‌ها رو وارد کنید",
+                fontSize = 14.sp,
+                color = White.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
+            // ناحیه اسکرول — کارت‌های تیم + دکمه ادامه (داخل اسکرول)
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 teams.forEach { team ->
                     val teamColor = teamColors.getOrElse(team.id) { teamColors[0] }
 
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(containerColor = White.copy(alpha = 0.1f)),
+                        border = BorderStroke(1.dp, teamColor.copy(alpha = 0.45f)),
+                        elevation = CardDefaults.cardElevation(0.dp)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            // Team number label
                             Text(
                                 text = "تیم ${team.id + 1}",
-                                fontSize = 20.sp,
+                                fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = teamColor,
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Center
                             )
+                            Spacer(modifier = Modifier.height(10.dp))
 
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            OutlinedTextField(
+                            GlassTextField(
                                 value = team.name,
                                 onValueChange = { onTeamNameChanged(team.id, it) },
-                                label = { Text("نام تیم") },
-                                modifier = Modifier.fillMaxWidth(),
-                                singleLine = true,
-                                shape = RoundedCornerShape(12.dp),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = teamColor,
-                                    unfocusedBorderColor = Color.LightGray,
-                                    cursorColor = teamColor
-                                )
+                                label = "نام تیم",
+                                accentColor = teamColor
                             )
-
                             Spacer(modifier = Modifier.height(8.dp))
-
-                            OutlinedTextField(
+                            GlassTextField(
                                 value = team.player1.name,
                                 onValueChange = { onPlayerNameChanged(team.player1.id, it) },
-                                label = { Text("بازیکن ۱") },
-                                modifier = Modifier.fillMaxWidth(),
-                                singleLine = true,
-                                shape = RoundedCornerShape(12.dp),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = teamColor,
-                                    unfocusedBorderColor = Color.LightGray,
-                                    cursorColor = teamColor
-                                )
+                                label = "بازیکن ۱",
+                                accentColor = teamColor
                             )
-
                             Spacer(modifier = Modifier.height(8.dp))
-
-                            OutlinedTextField(
+                            GlassTextField(
                                 value = team.player2.name,
                                 onValueChange = { onPlayerNameChanged(team.player2.id, it) },
-                                label = { Text("بازیکن ۲") },
-                                modifier = Modifier.fillMaxWidth(),
-                                singleLine = true,
-                                shape = RoundedCornerShape(12.dp),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = teamColor,
-                                    unfocusedBorderColor = Color.LightGray,
-                                    cursorColor = teamColor
-                                )
+                                label = "بازیکن ۲",
+                                accentColor = teamColor
                             )
                         }
                     }
                 }
+
+                // دکمه داخل اسکرول → همیشه بعد از آخرین کارت قابل اسکرول است
+                Spacer(modifier = Modifier.height(4.dp))
+                KalamzButton(
+                    text = "ادامه",
+                    onClick = onConfirm,
+                    enabled = allNamesFilled,
+                    containerColor = if (allNamesFilled) White.copy(alpha = 0.92f) else White.copy(alpha = 0.25f),
+                    contentColor = if (allNamesFilled) RedPrimary else White.copy(alpha = 0.5f)
+                )
+                Spacer(modifier = Modifier.height(24.dp))
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            KalamzButton(
-                text = "ادامه ➡️",
-                onClick = onConfirm,
-                enabled = allNamesFilled,
-                containerColor = YellowAccent,
-                contentColor = DarkText
-            )
         }
     }
 }
 
+@Composable
+private fun GlassTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    accentColor: Color = White
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label, fontSize = 13.sp) },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        shape = RoundedCornerShape(16.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = accentColor,
+            unfocusedBorderColor = White.copy(alpha = 0.3f),
+            focusedLabelColor = accentColor,
+            unfocusedLabelColor = White.copy(alpha = 0.5f),
+            cursorColor = accentColor,
+            focusedTextColor = White,
+            unfocusedTextColor = White,
+            focusedContainerColor = White.copy(alpha = 0.08f),
+            unfocusedContainerColor = White.copy(alpha = 0.04f),
+        )
+    )
+}

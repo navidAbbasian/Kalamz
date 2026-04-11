@@ -1,6 +1,6 @@
 package com.example.kalamz.ui.components
 
-import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -15,8 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kalamz.model.Team
-import com.example.kalamz.ui.theme.White
-import com.example.kalamz.ui.theme.teamColors
+import com.example.kalamz.ui.theme.*
 
 @Composable
 fun TeamScoreCard(
@@ -26,16 +25,15 @@ fun TeamScoreCard(
     modifier: Modifier = Modifier
 ) {
     val teamColor = teamColors.getOrElse(team.id) { teamColors[0] }
+    val borderColor = if (isWinner) teamColor.copy(alpha = 0.6f) else White.copy(alpha = 0.25f)
+    val bgColor = if (isWinner) teamColor.copy(alpha = 0.2f) else White.copy(alpha = 0.1f)
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .animateContentSize(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isWinner) teamColor.copy(alpha = 0.15f) else White
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isWinner) 8.dp else 4.dp)
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = bgColor),
+        border = BorderStroke(if (isWinner) 1.5.dp else 1.dp, borderColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
@@ -45,15 +43,19 @@ fun TeamScoreCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Rank
-                Text(
-                    text = if (isWinner) "🏆" else "$rank",
-                    fontSize = if (isWinner) 28.sp else 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = teamColor,
-                    modifier = Modifier.width(40.dp),
-                    textAlign = TextAlign.Center
-                )
+                // Rank badge
+                Box(
+                    modifier = Modifier.size(44.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (isWinner) "🏆" else "$rank",
+                        fontSize = if (isWinner) 28.sp else 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isWinner) GoldAccent else White.copy(alpha = 0.7f),
+                        textAlign = TextAlign.Center
+                    )
+                }
 
                 Spacer(modifier = Modifier.width(12.dp))
 
@@ -66,8 +68,8 @@ fun TeamScoreCard(
                     )
                     Text(
                         text = "${team.player1.name} و ${team.player2.name}",
-                        fontSize = 14.sp,
-                        color = Color.Gray
+                        fontSize = 13.sp,
+                        color = White.copy(alpha = 0.6f)
                     )
                 }
             }
@@ -75,17 +77,16 @@ fun TeamScoreCard(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "${team.totalScore}",
-                    fontSize = 28.sp,
+                    fontSize = 30.sp,
                     fontWeight = FontWeight.Bold,
-                    color = teamColor
+                    color = if (isWinner) GoldAccent else White
                 )
                 Text(
                     text = "امتیاز",
                     fontSize = 12.sp,
-                    color = Color.Gray
+                    color = White.copy(alpha = 0.6f)
                 )
             }
         }
     }
 }
-

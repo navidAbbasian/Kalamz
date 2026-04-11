@@ -1,11 +1,12 @@
 package com.example.kalamz.ui.components
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,8 +18,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.kalamz.ui.theme.RedPrimary
-import com.example.kalamz.ui.theme.YellowAccent
+import com.example.kalamz.ui.theme.*
 
 @Composable
 fun TimerDisplay(
@@ -35,34 +35,60 @@ fun TimerDisplay(
     val seconds = (timeLeftMillis / 1000).toInt()
     val isUrgent = seconds <= 10
 
-    val progressColor = if (isUrgent) RedPrimary else MaterialTheme.colorScheme.primary
-    val bgColor = Color.LightGray.copy(alpha = 0.3f)
+    val progressColor = if (isUrgent) Color(0xFFFF5252) else GoldAccent
+    val trackColor = White.copy(alpha = 0.15f)
 
-    Box(modifier = modifier.size(120.dp), contentAlignment = Alignment.Center) {
-        Canvas(modifier = Modifier.size(120.dp)) {
-            // Background circle
-            drawArc(
-                color = bgColor,
-                startAngle = -90f,
-                sweepAngle = 360f,
-                useCenter = false,
-                style = Stroke(width = 12.dp.toPx(), cap = StrokeCap.Round)
-            )
-            // Progress arc
-            drawArc(
-                color = progressColor,
-                startAngle = -90f,
-                sweepAngle = 360f * progress,
-                useCenter = false,
-                style = Stroke(width = 12.dp.toPx(), cap = StrokeCap.Round)
-            )
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = GlassWhite),
+        border = BorderStroke(1.dp, GlassBorder),
+        elevation = CardDefaults.cardElevation(0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Circular timer
+            Box(modifier = Modifier.size(72.dp), contentAlignment = Alignment.Center) {
+                Canvas(modifier = Modifier.size(72.dp)) {
+                    drawArc(
+                        color = trackColor,
+                        startAngle = -90f,
+                        sweepAngle = 360f,
+                        useCenter = false,
+                        style = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round)
+                    )
+                    drawArc(
+                        color = progressColor,
+                        startAngle = -90f,
+                        sweepAngle = 360f * progress,
+                        useCenter = false,
+                        style = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round)
+                    )
+                }
+                Text(
+                    text = "$seconds",
+                    fontSize = if (isUrgent) 26.sp else 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = progressColor
+                )
+            }
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "⏱️",
+                    fontSize = 28.sp
+                )
+                Text(
+                    text = "زمان باقی‌مانده",
+                    fontSize = 12.sp,
+                    color = White.copy(alpha = 0.7f)
+                )
+            }
         }
-        Text(
-            text = "$seconds",
-            fontSize = if (isUrgent) 40.sp else 36.sp,
-            fontWeight = FontWeight.Bold,
-            color = if (isUrgent) RedPrimary else MaterialTheme.colorScheme.primary
-        )
     }
 }
-

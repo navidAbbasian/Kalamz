@@ -411,7 +411,36 @@ class GameViewModel : ViewModel() {
         timer?.cancel()
         allWords = emptyList()
         playOrder = emptyList()
-        _uiState.value = GameUiState()
+        _uiState.value = GameUiState(resetCount = _uiState.value.resetCount + 1)
+    }
+
+    fun navigateBack() {
+        val state = _uiState.value
+        when (val phase = state.phase) {
+            is GamePhase.TeamSetup -> {
+                // برگشت به صفحه انتخاب تعداد بازیکنان
+                _uiState.update { it.copy(phase = GamePhase.Setup) }
+            }
+            is GamePhase.CustomSettings -> {
+                // برگشت به صفحه تنظیم تیم‌ها
+                _uiState.update { it.copy(phase = GamePhase.TeamSetup) }
+            }
+            is GamePhase.WordEntry -> {
+                val playerIndex = phase.currentPlayerIndex
+                if (playerIndex == 0) {
+                    // بازیکن اول هنوز کلمه‌ای ثبت نکرده، برگشت به تنظیمات بازی
+                    _uiState.update { it.copy(phase = GamePhase.CustomSettings) }
+                } else {
+                    // حذف کلمات بازیکن قبلی تا بتواند دوباره وارد کند
+                    val prevPlayer = state.allPlayers[playerIndex - 1]
+                    allWords = allWords.filter { it.submittedByPlayerId != prevPlayer.id }
+                    _uiState.update {
+                        it.copy(phase = GamePhase.WordEntry(currentPlayerIndex = playerIndex - 1))
+                    }
+                }
+            }
+            else -> {}
+        }
     }
 
     override fun onCleared() {

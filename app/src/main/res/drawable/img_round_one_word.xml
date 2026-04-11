@@ -1,0 +1,26 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    <!-- Bubble -->
+    <path android:fillColor="#33FFFFFF"
+        android:pathData="M20,20 Q20,10 30,10 L90,10 Q100,10 100,20 L100,65 Q100,75 90,75 L70,75 L60,90 L50,75 L30,75 Q20,75 20,65 Z"/>
+    <!-- Letter A inside -->
+    <path android:fillColor="#CCFFFFFF"
+        android:strokeWidth="5"
+        android:strokeColor="#CCFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M40,62 L60,25 L80,62"/>
+    <path android:strokeColor="#CCFFFFFF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M47,48 L73,48"/>
+    <!-- Stars around bubble -->
+    <path android:fillColor="#FFD700"
+        android:pathData="M8,15 L10,9 L12,15 L18,15 L13,19 L15,25 L10,21 L5,25 L7,19 L2,15 Z"/>
+    <path android:fillColor="#FFD700"
+        android:pathData="M108,8 L110,3 L112,8 L117,8 L113,11 L114,16 L110,13 L106,16 L107,11 L103,8 Z"/>
+</vector>
+

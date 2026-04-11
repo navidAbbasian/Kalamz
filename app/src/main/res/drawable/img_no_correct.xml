@@ -1,0 +1,25 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    <!-- Circle background -->
+    <path android:fillColor="#33FFFFFF"
+        android:pathData="M60,10 A50,50 0 1,1 59.99,10 Z"/>
+    <!-- Sad face circle -->
+    <path android:fillColor="#66FFFFFF"
+        android:pathData="M60,20 A40,40 0 1,1 59.99,20 Z"/>
+    <!-- Left eye -->
+    <path android:fillColor="#CC7B0000"
+        android:pathData="M43,45 A6,6 0 1,1 42.99,45 Z"/>
+    <!-- Right eye -->
+    <path android:fillColor="#CC7B0000"
+        android:pathData="M77,45 A6,6 0 1,1 76.99,45 Z"/>
+    <!-- Sad mouth -->
+    <path android:strokeColor="#CC7B0000"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M40,72 Q60,60 80,72"/>
+</vector>
+

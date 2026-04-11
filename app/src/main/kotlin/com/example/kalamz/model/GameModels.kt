@@ -60,6 +60,7 @@ data class GameUiState(
     val turnCorrectCount: Int = 0,
     val playOrderIndex: Int = 0, // index into the play order list
     val canGoToPrevious: Boolean = false,
-    val isTimerPaused: Boolean = false
+    val isTimerPaused: Boolean = false,
+    val resetCount: Int = 0
 )
 
